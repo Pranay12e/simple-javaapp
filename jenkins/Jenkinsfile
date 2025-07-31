@@ -1,28 +1,38 @@
 pipeline {
     agent any
-    options {
-        skipStagesAfterUnstable()
+
+    tools {
+        maven 'Maven 3.8.8'     
+        jdk 'JDK 17'            
     }
+
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                sh 'mvn -B -DskipTests clean package'
+                git ''
             }
         }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
         stage('Test') {
             steps {
                 sh 'mvn test'
             }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
         }
-        stage('Deliver') { 
-            steps {
-                sh './jenkins/scripts/deliver.sh' 
-            }
+    }
+
+    post {
+        success {
+            echo 'Build and tests passed successfully!'
+        }
+        failure {
+            echo 'Build or tests failed.'
         }
     }
 }
+
